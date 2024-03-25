@@ -25,76 +25,58 @@ public class Pontoon extends CardGame{
 
 	//comparing hands
 	public int compareHands(Player hand1, Player hand2) {
-		ArrayList<Card> handOne = hand1.getCards();
-		ArrayList<Card> handTwo = hand2.getCards();
-		ArrayList<Integer> numValue = hand1.getNumericalHandValue();
-		ArrayList<Integer> numValueTwo = hand2.getNumericalHandValue();
+	    ArrayList<Integer> numValue1 = hand1.getNumericalHandValue();
+	    ArrayList<Integer> numValue2 = hand2.getNumericalHandValue();
 
-		int handOneCheck = closestToTwentyOne(numValue);
-		int handTwoCheck = closestToTwentyOne(numValueTwo);
+	    boolean hand1Bust = checkForBust(numValue1);
+	    boolean hand2Bust = checkForBust(numValue2);
 
-		Card unoOne = handOne.get(0);
-		Card.Value un = unoOne.getValue();
-		Card unoTwo = handOne.get(1);
-		Card.Value deux= unoTwo.getValue();
-		Card dosOne = handTwo.get(0);
-		Card.Value trois = dosOne.getValue();
-		Card dosTwo = handTwo.get(1);
-		Card.Value quatre = dosTwo.getValue();
+	    // Both hands bust
+	    if (hand1Bust && hand2Bust) return 0;
+	    // Only Hand 1 busts
+	    if (hand1Bust) return 1;
+	    // Only Hand 2 busts
+	    if (hand2Bust) return -1;
 
+	    // Check for Pontoon (Ace + 10-value card)
+	    boolean hand1Pontoon = isPontoon(hand1.getCards());
+	    boolean hand2Pontoon = isPontoon(hand2.getCards());
 
-		if (checkForBust(numValue) == false && checkForBust(numValueTwo) == true)
-			return -1;
-		else
-			if (checkForBust(numValue) == true && checkForBust(numValueTwo) == true)
-				return 0;
-			else
-				if (checkForBust(numValueTwo) == false && checkForBust(numValue) == true)
-					return 1;
-				else
-					if(((un == Value.ACE && deux == Value.TEN) || (un == Value.TEN && deux == Value.ACE)) && ((trois != Value.ACE && quatre != Value.ACE)))
-						return -1;
-					else 
-						if (((un == Value.ACE && deux == Value.TEN) || (un == Value.TEN && deux == Value.ACE)) && ((trois == Value.ACE && quatre == Value.TEN) || (trois == Value.TEN && quatre == Value.ACE)))
-							return 0;
-						else
-							if (((un != Value.ACE &&  deux != Value.ACE)) && ((trois == Value.ACE && quatre == Value.TEN) || (trois == Value.TEN && quatre == Value.ACE)))
-								return 1;
-							else
-								if (handOne.size() == 5 && twentyOneCheck(numValue) == true && handTwo.size() !=5)
-									return -1;
-								else
-									if (handOne.size() == 5 && twentyOneCheck(numValue) == true && handTwo.size() ==5 && twentyOneCheck(numValueTwo) == true)
-										return 0;
-									else
-										if (handTwo.size() == 5 && twentyOneCheck(numValueTwo) == true && handOne.size() !=5)
-											return 1;
-										else
-											if (twentyOneCheck(numValue) == true && twentyOneCheck(numValueTwo) == false)
-												return -1;
-											else
-												if (twentyOneCheck(numValue) == true && twentyOneCheck(numValueTwo) == true)
-													return 0;
-												else
-													if (twentyOneCheck(numValueTwo) == true && twentyOneCheck(numValue) == false)
-														return 1;
-													else
-														if(handOneCheck > handTwoCheck)
-															return -1;
-														else
-															if (handOneCheck == handTwoCheck)
-																return 0;
-															else
-																if(handTwoCheck > handOneCheck)
-																	return 1;
-		return 0;
+	    if (hand1Pontoon && !hand2Pontoon) return -1;
+	    if (hand2Pontoon && !hand1Pontoon) return 1;
+	    if (hand1Pontoon) return 0; // Both have Pontoon, it's a tie
 
+	    // Check for a Five-Card Trick
+	    boolean hand1FiveCardTrick = isFiveCardTrick(numValue1) && !hand1Bust;
+	    boolean hand2FiveCardTrick = isFiveCardTrick(numValue2) && !hand2Bust;
 
+	    if (hand1FiveCardTrick && !hand2FiveCardTrick) return -1;
+	    if (hand2FiveCardTrick && !hand1FiveCardTrick) return 1;
+	    if (hand1FiveCardTrick) return 0; // Both have Five-Card Trick, it's a tie
 
+	    // General hand comparison
+	    int hand1Closest = closestToTwentyOne(numValue1);
+	    int hand2Closest = closestToTwentyOne(numValue2);
 
-
+	    if (hand1Closest > hand2Closest) return -1;
+	    if (hand1Closest < hand2Closest) return 1;
+	    return 0; // Equal values
 	}
-	
+
+
+	private boolean isPontoon(ArrayList<Card> hand) {
+	    if (hand.size() != 2) return false;
+	    Card card1 = hand.get(0);
+	    Card card2 = hand.get(1);
+	    return (card1.getValue() == Card.Value.ACE && card2.getValue().ordinal() >= Card.Value.TEN.ordinal()) ||
+	           (card2.getValue() == Card.Value.ACE && card1.getValue().ordinal() >= Card.Value.TEN.ordinal());
+	}
+
+	private boolean isFiveCardTrick(ArrayList<Integer> values) {
+	    // Assuming you have logic to determine this based on hand value not busting and having 5 cards
+	    return values.size() == 5; // Placeholder, adjust based on your actual logic
+	}
+
 	//checking for different scenarios
 	public boolean twentyOneCheck(ArrayList<Integer> list) {
 		for (int i =0; i<list.size(); i++) {
